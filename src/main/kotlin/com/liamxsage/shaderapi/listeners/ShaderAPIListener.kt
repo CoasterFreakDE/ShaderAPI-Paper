@@ -3,6 +3,7 @@ package com.liamxsage.shaderapi.listeners
 import com.liamxsage.klassicx.extensions.getLogger
 import com.liamxsage.shaderapi.SHADERAPI_INCOMING_CHANNEL
 import com.liamxsage.shaderapi.SHADERAPI_RESOURCELOCATION
+import com.liamxsage.shaderapi.ShaderAPI
 import com.liamxsage.shaderapi.resource.ShaderPackInfo
 import com.liamxsage.shaderapi.resource.ShaderPackInfoImpl
 import io.netty.buffer.ByteBuf
@@ -20,37 +21,24 @@ import java.net.URI
 class ShaderAPIListener : PluginMessageListener {
 
 
+    private val shaderPackInfo: ShaderPackInfo = ShaderPackInfo.shaderPackInfo()
+        .uri(URI.create(ShaderAPI.instance.config.getString("shaderPack") ?: "https://cdn.modrinth.com/data/HVnmMxH1/versions/pAOQ9Amz/ComplementaryReimagined_r5.2.2.zip"))
+        .computeHashAndBuild().get()
 
     override fun onPluginMessageReceived(channel: String, player: Player, message: ByteArray?) {
         if (SHADERAPI_INCOMING_CHANNEL != channel) return  // Ensure it's the correct channel
-
-        also {
-            if (message == null) return@also
-            if (message.isEmpty()) return@also
-            val shaderUrl = message.toString(Charsets.UTF_8)
-            getLogger().info("Shader URL received: $shaderUrl")
-        }
-
-        val shaderUrl = "https://cdn.modrinth.com/data/HVnmMxH1/versions/pAOQ9Amz/ComplementaryReimagined_r5.2.2.zip"
-
-        ShaderPackInfo.shaderPackInfo()
-            .uri(URI.create(shaderUrl))
-            .computeHashAndBuild().thenApply {
-                getLogger().info("Shader hash: ${it.hash()}")
-                sendShaderUrl(player, shaderUrl, it.hash())
-                getLogger().info("Shader URL sent")
-            }
+        sendShaderUrl(player, shaderPackInfo)
     }
 
-    private fun sendShaderUrl(player: Player, shaderUrl: String, hash: String) {
+    private fun sendShaderUrl(player: Player, shaderPackInfo: ShaderPackInfo) {
         try {
             // Create a ByteBuf to hold the data
             val byteBuf = FriendlyByteBuf(Unpooled.buffer())
 
             // Write the shader URL to the buffer as UTF-8
-            byteBuf.writeUtf(shaderUrl)
-            byteBuf.writeUtf(hash)
-            byteBuf.writeUtf("global")
+            byteBuf.writeUtf(shaderPackInfo.uri().toString())
+            byteBuf.writeUtf(shaderPackInfo.hash())
+            byteBuf.writeUtf(ShaderAPI.instance.serverGroup)
 
 
             // Send the data to the client using the correct channel

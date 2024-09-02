@@ -1,0 +1,5 @@
+# If you want to group your servers, you can do so here
+serverGroup: null
+
+# ShaderPack Infos
+shaderPack: https://cdn.modrinth.com/data/HVnmMxH1/versions/pAOQ9Amz/ComplementaryReimagined_r5.2.2.zip
