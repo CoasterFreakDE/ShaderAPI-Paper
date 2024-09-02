@@ -1,4 +1,4 @@
-package com.liamxsage.boilerplates;
+package com.liamxsage.shaderapi;
 
 import io.papermc.paper.plugin.loader.PluginClasspathBuilder;
 import io.papermc.paper.plugin.loader.PluginLoader;

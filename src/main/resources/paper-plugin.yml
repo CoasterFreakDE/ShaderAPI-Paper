@@ -1,7 +1,7 @@
-name: PaperBoilerplate
-main: com.liamxsage.boilerplates.PaperBoilerplate
+name: ShaderAPI
+main: com.liamxsage.shaderapi.ShaderAPI
 version: ${version}
-description: "This is a template for a new plugin based on Paper and the new Minecraft API."
+description: "This is a plugin for PaperSpigot that allows you to apply shaders to your Minecraft players."
 author: "LiamXSage"
 api-version: "1.21"
-loader: com.liamxsage.boilerplates.DependencyLoader
+loader: com.liamxsage.shaderapi.DependencyLoader
