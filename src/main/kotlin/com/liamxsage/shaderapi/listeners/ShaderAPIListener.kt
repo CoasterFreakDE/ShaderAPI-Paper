@@ -1,11 +1,11 @@
 package com.liamxsage.shaderapi.listeners
 
-import com.liamxsage.klassicx.extensions.getLogger
-import com.liamxsage.shaderapi.SHADERAPI_INCOMING_CHANNEL
+import com.liamxsage.shaderapi.SHADERAPI_REQUEST_CHANNEL
 import com.liamxsage.shaderapi.SHADERAPI_RESOURCELOCATION
+import com.liamxsage.shaderapi.SHADERAPI_STATUS_CHANNEL
 import com.liamxsage.shaderapi.ShaderAPI
+import com.liamxsage.shaderapi.events.ShaderStatusChangedEvent
 import com.liamxsage.shaderapi.resource.ShaderPackInfo
-import com.liamxsage.shaderapi.resource.ShaderPackInfoImpl
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
 import net.minecraft.network.FriendlyByteBuf
@@ -21,13 +21,28 @@ import java.net.URI
 class ShaderAPIListener : PluginMessageListener {
 
 
+    private val handleIncomingPackets = mapOf(
+        SHADERAPI_REQUEST_CHANNEL to this::onRequestShaderUrl,
+        SHADERAPI_STATUS_CHANNEL to this::onShaderStatusResponse
+    )
+
     private val shaderPackInfo: ShaderPackInfo = ShaderPackInfo.shaderPackInfo()
         .uri(URI.create(ShaderAPI.instance.config.getString("shaderPack") ?: "https://cdn.modrinth.com/data/HVnmMxH1/versions/pAOQ9Amz/ComplementaryReimagined_r5.2.2.zip"))
         .computeHashAndBuild().get()
 
     override fun onPluginMessageReceived(channel: String, player: Player, message: ByteArray?) {
-        if (SHADERAPI_INCOMING_CHANNEL != channel) return  // Ensure it's the correct channel
+        if (channel !in handleIncomingPackets.keys) return  // Ensure it's the correct channel
+
+        handleIncomingPackets[channel]?.invoke(player, message)
+    }
+
+    private fun onRequestShaderUrl(player: Player, message: ByteArray?) {
         sendShaderUrl(player, shaderPackInfo)
+    }
+
+    private fun onShaderStatusResponse(player: Player, message: ByteArray?) {
+        val statusResponse = message?.let { String(it, Charsets.UTF_8) } ?: return
+        ShaderStatusChangedEvent(player, statusResponse).callEvent()
     }
 
     private fun sendShaderUrl(player: Player, shaderPackInfo: ShaderPackInfo) {

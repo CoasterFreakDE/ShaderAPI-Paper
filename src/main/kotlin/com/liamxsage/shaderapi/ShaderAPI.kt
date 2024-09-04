@@ -1,6 +1,7 @@
 package com.liamxsage.shaderapi
 
 import com.liamxsage.shaderapi.listeners.ShaderAPIListener
+import com.liamxsage.shaderapi.listeners.ShaderStatusChangeListener
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.plugin.messaging.Messenger
@@ -33,8 +34,12 @@ class ShaderAPI : JavaPlugin() {
         // Plugin startup logic
         val time = measureTimeMillis {
             val messenger: Messenger = Bukkit.getMessenger()
-            messenger.registerIncomingPluginChannel(this, SHADERAPI_INCOMING_CHANNEL, ShaderAPIListener())
-            messenger.registerOutgoingPluginChannel(this, SHADERAPI_OUTGOING_CHANNEL)
+            val listener = ShaderAPIListener()
+            messenger.registerIncomingPluginChannel(this, SHADERAPI_REQUEST_CHANNEL, listener)
+            messenger.registerIncomingPluginChannel(this, SHADERAPI_STATUS_CHANNEL, listener)
+            messenger.registerOutgoingPluginChannel(this, SHADERAPI_SEND_DATA_CHANNEL)
+
+            Bukkit.getPluginManager().registerEvents(ShaderStatusChangeListener(), this)
         }
         println("Plugin enabled in $time ms")
     }

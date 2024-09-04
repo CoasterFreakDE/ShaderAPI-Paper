@@ -22,6 +22,8 @@ val ktorVersion: String by project
 val mcCoroutineVersion: String by project
 
 repositories {
+    mavenLocal()
+    maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://nexus.flawcra.cc/repository/maven-mirrors/")
 }
 
